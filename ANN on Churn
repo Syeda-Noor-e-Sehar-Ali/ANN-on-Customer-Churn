@@ -1,0 +1,119 @@
+
+import pandas as pd
+
+import numpy as np
+
+import matplotlib.pyplot as plt
+
+import seaborn as sb
+from sklearn.metrics import accuracy_score,recall_score
+
+df = pd.read_csv("/content/drive/MyDrive/Semester projects/Semester 5/Semester 5 AI/Graded lab/customer_churn.csv")
+df.head()
+
+df = df.drop('customerID',axis=1)
+
+count=0
+for i in df.TotalCharges:
+    if i==' ':
+        count+=1
+print('count of empty string:- ',count)
+df['TotalCharges'] = df['TotalCharges'].replace(" ",np.nan)
+
+df['TotalCharges'] = df['TotalCharges'].astype(float)
+
+df.isnull().sum()
+
+df.dtypes
+
+df['TotalCharges'] = df['TotalCharges'].fillna(df['TotalCharges'].mean())
+
+import seaborn as sns
+import matplotlib.pyplot as plt
+import pandas as pd
+
+sns.histplot(x='tenure', data=df, kde=False, hue='Churn')
+
+plt.show()
+
+num = list(df.select_dtypes(include=['int64','float64']).keys())
+
+cat = list(df.select_dtypes(include='O').keys())
+
+print(cat)
+
+print(num)
+
+for i in cat:
+    print(df[i].value_counts())
+df.MultipleLines = df.MultipleLines.replace('No phone service','No')
+df.InternetService=df.InternetService.replace('No internet service','No')
+df.OnlineSecurity = df.OnlineSecurity.replace('No internet service','No')
+df.OnlineBackup = df.OnlineBackup.replace('No internet service','No')
+df.DeviceProtection = df.DeviceProtection.replace('No internet service','No')
+df.TechSupport = df.TechSupport.replace('No internet service','No')
+df.StreamingTV = df.StreamingTV.replace('No internet service','No')
+df.StreamingMovies = df.StreamingMovies.replace('No internet service','No')
+df
+
+for i in cat:
+    df[i] = df[i].replace('Yes',1)
+    df[i] = df[i].replace('No',0)
+
+df.gender = df.gender.replace('Male',1)
+df.gender = df.gender.replace('Female',0)
+
+from sklearn.preprocessing import LabelEncoder
+label = LabelEncoder()
+df['InternetService'] = label.fit_transform(df['InternetService'])
+df['Contract'] = label.fit_transform(df['Contract'])
+df['PaymentMethod'] = label.fit_transform(df['PaymentMethod'])
+
+df.dtypes
+
+scale_cols = ['tenure','MonthlyCharges','TotalCharges']
+from sklearn.preprocessing import MinMaxScaler
+scale = MinMaxScaler()
+df[scale_cols] = scale.fit_transform(df[scale_cols])
+
+x = df.drop('Churn',axis=1)
+y = df['Churn']
+
+from sklearn.model_selection import train_test_split
+xtrain,xtest,ytrain,ytest = train_test_split(x,y,test_size=0.2,random_state=10)
+print(xtrain.shape)
+print(xtest.shape)
+
+import tensorflow as tf
+from tensorflow import keras
+
+model = keras.Sequential([
+
+    keras.layers.Dense(19, input_shape=(19,), activation='relu'),
+    keras.layers.Dense(17, activation='relu'),
+
+
+    keras.layers.Dense(1, activation='sigmoid')
+]
+)
+
+model.compile(optimizer = 'adam',
+             loss = 'binary_crossentropy',
+             metrics = ['accuracy'])
+model.fit(xtrain,ytrain,epochs=100)
+
+model.evaluate(xtest,ytest)
+
+ypred = model.predict(xtest)
+print(ypred)
+ypred_lis = []
+for i in ypred:
+    if i>0.5:
+        ypred_lis.append(1)
+    else:
+        ypred_lis.append(0)
+print(ypred_lis)
+
+data = {'orignal_churn':ytest, 'predicted_churn':ypred_lis}
+df_check = pd.DataFrame(data)
+df_check.head(10)
